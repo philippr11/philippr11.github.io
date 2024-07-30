@@ -1,0 +1,64 @@
+name: publish-to-github-pages
+on:
+  push:
+    branches:
+      - main
+  repository_dispatch:
+    types: [publish-event]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: remove all files # remove files.
+        run: rm -rf *
+      - name: checkout master branch #checkout master  branch into temp folder.
+        uses: actions/checkout@v2
+        with:
+          ref: master
+          path: temp
+          persist-credentials: false
+
+      - name: run npm install and build 🏗️ # go to temp folder and run npm build to create files.
+        env: # Or as an environment variable
+          CONTENTFUL_DELIVERY_TOKEN: ${{ secrets.CONTENTFUL_DELIVERY_TOKEN }}
+          CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
+        working-directory: ./temp/site
+        run: |
+          npm i
+          npm run build
+
+      - name: Upload artifact 📡
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./temp/site/out
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Publish to GitHub Pages 🚀
+        id: deployment
+        uses: actions/deploy-pages@v4

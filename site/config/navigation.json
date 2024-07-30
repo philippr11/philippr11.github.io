@@ -1,0 +1,20 @@
+{
+    "footer": {
+        "legal": [
+            {
+                "name": {
+                    "en": "Data Protection",
+                    "de": "Datenschutz"
+                },
+                "url": "/data-protection"
+            },
+            {
+                "name": {
+                    "en": "Imprint",
+                    "de": "Impressum"
+                },
+                "url": "/impressum"
+            }
+        ]
+    }
+}
