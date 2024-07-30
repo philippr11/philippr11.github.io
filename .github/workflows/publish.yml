@@ -29,10 +29,10 @@ jobs:
 
       - name: remove all files # remove files.
         run: rm -rf *
-      - name: checkout master branch #checkout master  branch into temp folder.
+      - name: checkout main branch #checkout main branch into temp folder.
         uses: actions/checkout@v2
         with:
-          ref: master
+          ref: main
           path: temp
           persist-credentials: false
 
