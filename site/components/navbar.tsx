@@ -47,7 +47,6 @@ const NavBar = ({ currentRoute }: { currentRoute: string }) => {
           {/* Navbar */}
           <div className="hidden md:block">
             <ul className="flex space-x-8 text-sm font-sans">
-              <LocaleSwitch />
               {items.map(item => (
                 <li key={item.route}>
                   <Link
@@ -119,7 +118,6 @@ const NavBar = ({ currentRoute }: { currentRoute: string }) => {
                 </li>
               ))}
             </ul>
-            <LocaleSwitch />
           </aside>
         </div>
       </nav>

@@ -2,10 +2,11 @@
  * Determines current locale from current path. The only two supported languages are english (en) and german (de), where english is the default language (has no path prefix).
  */
 export function getCurrentLocale(path: string) {
-    if (path && path.startsWith("/de")) {
-        return "de";
-    }
-    else return "en";
+    // if (path && path.startsWith("/de")) {
+    //     return "de";
+    // }
+    // else return "en";
+    return "de";
 }
 
 /**
