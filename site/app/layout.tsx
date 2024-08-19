@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Layout from "@/components/layout";
+import { GoogleTagManager } from "@next/third-parties/google";
+import { CookieBanner } from "@/components/cookieBanner";
 
 export const metadata: Metadata = {
   title: "Finanzferkel",
@@ -15,6 +17,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans">
+        <GoogleTagManager gtmId={`${process.env.GTM_ID}`}  />
+        <CookieBanner />
         <Layout>
           {children}
         </Layout>

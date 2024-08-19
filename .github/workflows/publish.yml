@@ -40,6 +40,7 @@ jobs:
         env: # Or as an environment variable
           CONTENTFUL_DELIVERY_TOKEN: ${{ secrets.CONTENTFUL_DELIVERY_TOKEN }}
           CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
+          GTM_ID: ${{ secrets.GTM_ID }}
         working-directory: ./temp/site
         run: |
           npm i
