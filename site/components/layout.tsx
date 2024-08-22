@@ -17,7 +17,9 @@ const Layout = ({ children }: { children: any }) => {
       <div className="bg-primary-light50 mt-10">
         <main>{children}</main>
       </div>
-      <Footer />
+      <div className="self-end">
+        <Footer />
+      </div>
     </>
   )
 }
