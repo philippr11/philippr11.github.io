@@ -10,10 +10,10 @@ export async function generateStaticParams() {
 }
 
 export default async function Page({ params }: { params: { slug: string, title: string, content: any } }) {
-    const options = getRichTextFormattingOptions();
+    const options = await getRichTextFormattingOptions('de');
     const content = await getLegalPage(params.slug, 'de');
     return <div className="py-5 px-5 lg:px-52">
-        <h1 className="text-xl font-bold pb-4">{content.title}</h1>
-        {documentToReactComponents(content.content.json, options)}
+        <h1 className="text-xl font-bold pb-4">{content.titel}</h1>
+        {documentToReactComponents(content.text.json, options)}
     </div>
 }

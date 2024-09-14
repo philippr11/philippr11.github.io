@@ -11,7 +11,7 @@ export async function fetchLegalPages() {
            body: JSON.stringify({ query: `query {
                 legalPageCollection {
                 items {
-                    title
+                    titel
                     slug
                     }
                 }
@@ -34,9 +34,9 @@ export async function getLegalPage(slug: string, locale: string) {
        body: JSON.stringify({ query: `query {
             legalPageCollection(locale: "${locale}", where:{slug: "${slug}"}) {
             items {
-              title
+              titel
               slug
-              content {
+              text {
                 json
               }
             }

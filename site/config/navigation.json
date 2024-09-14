@@ -4,9 +4,9 @@
             {
                 "name": {
                     "en": "Data Protection",
-                    "de": "Datenschutz"
+                    "de": "Datenschutzerklärung"
                 },
-                "url": "/data-protection"
+                "url": "/datenschutz"
             },
             {
                 "name": {
@@ -14,6 +14,20 @@
                     "de": "Impressum"
                 },
                 "url": "/impressum"
+            },
+            {
+                "name": {
+                    "en": "Contact",
+                    "de": "Contact"
+                },
+                "url": "/contact"
+            },
+            {
+                "name": {
+                    "en": "Disclaimer",
+                    "de": "Disclaimer"
+                },
+                "url": "/disclaimer"
             }
         ]
     }

@@ -25,12 +25,11 @@ function resetCookieConsent() {
 
 export function Footer() {
     const currentRoute = usePathname();
-    const currentLocale = getCurrentLocale(currentRoute);
     return <>
     <div className="mt-10 py-6 px-5 lg:px-52 w-full bg-footer-bg text-footer-text grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* legal links */}
         <div className="grid-cols-subgrid gap-3">
-            {navigation.footer.legal.map((item : { name: { en: string, de: string }, url: string }) => <div key={item.name.en}><Link className="underline" href={getLinkToLocale(item.url, currentLocale, currentLocale)}>{getNameInCurrentLocale(item.name, currentLocale)}</Link></div>)}
+            {navigation.footer.legal.map((item : { name: { en: string, de: string }, url: string }) => <div key={item.name.de}><Link className="underline" href={item.url}>{item.name.de}</Link></div>)}
             <div className="underline cursor-pointer" onClick={resetCookieConsent}>Cookie Einstellungen</div>
         </div>
         { /* something else in the future */ }
