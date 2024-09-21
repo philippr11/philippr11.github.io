@@ -129,7 +129,7 @@ export async function getRichTextFormattingOptions(locale: string) {
             },
             [INLINES.HYPERLINK]: (node: any, children: any) => {
                 return (
-                    <a className="text-accent cursor-pointer" href={node.data.uri}>{children}</a>
+                    <a className="text-primary cursor-pointer" href={node.data.uri}>{children}</a>
                 )
             },
             [INLINES.ENTRY_HYPERLINK]: (node: any, children: any) => {
