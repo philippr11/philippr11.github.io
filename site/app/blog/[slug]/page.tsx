@@ -13,7 +13,7 @@ export async function generateStaticParams() {
 export default async function Page({ params }: { params: { slug: string, title: string, content: any } }) {
     const options = await getRichTextFormattingOptions('de');
     const content = await getBlogPage(params.slug, 'de');
-    return <div className="py-5 mt-10 px-5 lg:px-52">
+    return <div className="pt-28 mt-10 px-5 lg:px-52">
         <BlogArticle options={options} content={content} />
     </div>
 }

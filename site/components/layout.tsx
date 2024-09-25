@@ -14,10 +14,10 @@ const Layout = ({ children }: { children: any }) => {
       <div className="absolute top-0">
         <NavBar currentRoute={currentRoute} />
       </div>
-      <div className="bg-primary-light50 mt-10">
+      <div className="mt-10 md:mt-20 bg-primary-light50">
         <main>{children}</main>
       </div>
-      <div className="self-end">
+      <div className="w-full">
         <Footer />
       </div>
     </>

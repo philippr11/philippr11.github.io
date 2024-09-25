@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans min-h-screen h-full grid grid-col-1 items-start">
+      <body className="font-sans min-h-screen h-full flex flex-col items-start bg-primary-light50">
         <GoogleTagManager gtmId={`${process.env.GTM_ID}`}  />
         <CookieBanner />
         <Layout>

@@ -19,7 +19,7 @@ export async function getRichTextFormattingOptions(locale: string) {
             },
             [BLOCKS.LIST_ITEM]: (node: any, children: any) => {
                 return (
-                    <li className="list-item group-[.list-none]:marker:[content:'-'] [counter-increment:listnumber] group-[.unordered]:marker:[content:counters(listnumber,'.')] marker:text-accent px-4">{children}</li>
+                    <li className="list-item group-[.list-none]:marker:[content:'-'] [counter-increment:listnumber] group-[.ordered]:marker:[content:counters(listnumber,'.')] marker:text-primary px-4">{children}</li>
                 )
             },
             [BLOCKS.DOCUMENT]: (node: any, children: any) => {
@@ -64,7 +64,7 @@ export async function getRichTextFormattingOptions(locale: string) {
             },
             [BLOCKS.OL_LIST]: (node: any, children: any) => {
                 return (
-                    <ol className="unordered [counter-reset:listnumber] group">{children}</ol>
+                    <ol className="ordered [counter-reset:listnumber] group">{children}</ol>
                 )
             },
             [BLOCKS.QUOTE]: (node: any, children: any) => {
