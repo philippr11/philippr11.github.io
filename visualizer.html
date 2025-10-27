@@ -181,7 +181,7 @@
             loadingState.classList.remove('hidden');
 
             try {
-                const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://github.com/philippr11/philippr11.github.io/releases/download/v1.0/bq-results-20251027-144739-1761577202520.csv'));
+                const response = await fetch('https://raw.githubusercontent.com/philippr11/philippr11.github.io/main/bq-results-20251027-144739-1761577202520.csv');
                 const csvText = await response.text();
                 
                 Papa.parse(csvText, {
