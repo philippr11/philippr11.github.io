@@ -392,13 +392,29 @@
             }
 
             const shareUrl = `${window.location.origin}${window.location.pathname}?btc=${btcAmount}`;
+            const shareText = `I'm in the top ${document.getElementById('percentile-display').textContent} of all Bitcoin addresses! Check your ranking:`;
             
+            // Try native Web Share API first (mobile & modern browsers)
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'My Bitcoin Wealth Ranking',
+                        text: shareText,
+                        url: shareUrl
+                    });
+                    return;
+                } catch (error) {
+                    console.log('User cancelled sharing or error occurred');
+                }
+            }
+            
+            // Fallback: copy to clipboard
             try {
-                await navigator.clipboard.writeText(shareUrl);
+                await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
                 showToast();
             } catch (error) {
                 console.error('Failed to copy to clipboard:', error);
-                // Fallback: show URL in prompt
+                // Final fallback: show URL in prompt
                 prompt('Copy this URL to share:', shareUrl);
             }
         });
