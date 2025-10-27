@@ -148,7 +148,6 @@
                             <th class="text-left text-gray-300 py-3 px-4">Rank</th>
                             <th class="text-left text-gray-300 py-3 px-4">Address</th>
                             <th class="text-right text-gray-300 py-3 px-4">Balance (BTC)</th>
-                            <th class="text-left text-gray-300 py-3 px-4">Notes</th>
                         </tr>
                     </thead>
                     <tbody id="top-100-table">
@@ -208,7 +207,7 @@
             const tableBody = document.getElementById('top-100-table');
             
             if (!csvData) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">Loading data...</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-400 py-8">Loading data...</td></tr>';
                 return;
             }
 
@@ -229,7 +228,6 @@
                     <td class="py-3 px-4 text-gray-300 font-medium">#${index + 1}</td>
                     <td class="py-3 px-4 text-gray-400 font-mono text-xs">${address}</td>
                     <td class="py-3 px-4 text-right text-orange-400 font-medium">${balance}</td>
-                    <td class="py-3 px-4 text-gray-300"></td>
                 `;
                 
                 tableBody.appendChild(row);
