@@ -175,36 +175,30 @@
         let csvData = null;
         let chart = null;
 
-        // Load CSV data on page load
-        async function loadCSVData() {
+        // Load JSON data on page load
+        async function loadJSONData() {
             const loadingState = document.getElementById('loading-state');
             loadingState.classList.remove('hidden');
 
             try {
-                const response = await fetch('https://raw.githubusercontent.com/philippr11/philippr11.github.io/main/bq-results-20251027-144739-1761577202520.csv');
-                const csvText = await response.text();
+                const response = await fetch('https://raw.githubusercontent.com/philippr11/philippr11.github.io/main/bq-results-20250923-141014-1758637018667.json');
+                const jsonText = await response.text();
                 
-                Papa.parse(csvText, {
-                    header: true,
-                    complete: function(results) {
-                        csvData = results.data;
-                        loadingState.classList.add('hidden');
-                        initializeChart();
-                        populateTop100Table(); // Populate table with real data
-                        checkURLParameters();
-                    },
-                    error: function(error) {
-                        console.error('Error parsing CSV:', error);
-                        loadingState.innerHTML = '<p class="text-red-400">Error loading data. Please try again later.</p>';
-                    }
-                });
+                // Parse JSON data
+                const jsonData = jsonText.trim().split('\n').map(line => JSON.parse(line));
+                csvData = jsonData; // Store for use in other functions
+                
+                loadingState.classList.add('hidden');
+                initializeChart();
+                populateTop100Table(); // Populate table with real data
+                checkURLParameters();
             } catch (error) {
-                console.error('Error fetching CSV:', error);
+                console.error('Error fetching JSON:', error);
                 loadingState.innerHTML = '<p class="text-red-400">Error loading data. Please try again later.</p>';
             }
         }
 
-        // Populate top 100 holdings table with real CSV data
+        // Populate top 100 holdings table with real JSON data
         function populateTop100Table() {
             const tableBody = document.getElementById('top-100-table');
             
@@ -213,46 +207,24 @@
                 return;
             }
 
-            // Get the top 100 entries from CSV data
-            // Assuming CSV has columns: Balance Bracket, Adressen, % Adressen (Summe)
-            const top100Data = [];
+            // Get the top 100 entries from JSON data (already sorted by balance)
+            tableBody.innerHTML = '';
             
-            // Sort by balance bracket to get richest first
-            const sortedData = csvData
-                .filter(row => row['Balance Bracket'] && row['Adressen'])
-                .sort((a, b) => {
-                    // Extract numeric values from balance brackets for sorting
-                    const getMinValue = (bracket) => {
-                        const match = bracket.match(/\[([0-9.]+)\s*-\s*([0-9.]+)\)/);
-                        return match ? parseFloat(match[1]) : 0;
-                    };
-                    return getMinValue(b['Balance Bracket']) - getMinValue(a['Balance Bracket']);
-                });
-
-            // Take top 100 entries and create table rows
-            sortedData.slice(0, 100).forEach((entry, index) => {
+            csvData.slice(0, 100).forEach((entry, index) => {
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-700 hover:bg-gray-700/50 transition-colors duration-200';
                 
-                // Calculate approximate balance for display (use midpoint of bracket)
-                const bracket = entry['Balance Bracket'];
-                const match = bracket.match(/\[([0-9.]+)\s*-\s*([0-9.]+)\)/);
-                let displayBalance = bracket;
-                if (match) {
-                    const min = parseFloat(match[1]);
-                    const max = parseFloat(match[2]);
-                    const midpoint = (min + max) / 2;
-                    displayBalance = midpoint.toLocaleString('en-US', { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                    });
-                }
+                const address = entry.address ? entry.address[0] : 'N/A';
+                const balance = parseFloat(entry.balance_btc).toLocaleString('en-US', {
+                    minimumFractionDigits: 8,
+                    maximumFractionDigits: 8
+                });
                 
                 row.innerHTML = `
                     <td class="py-3 px-4 text-gray-300 font-medium">#${index + 1}</td>
-                    <td class="py-3 px-4 text-gray-400 font-mono text-xs">${bracket}</td>
-                    <td class="py-3 px-4 text-right text-orange-400 font-medium">~${displayBalance}</td>
-                    <td class="py-3 px-4 text-gray-300">${entry['Adressen']} addresses</td>
+                    <td class="py-3 px-4 text-gray-400 font-mono text-xs">${address}</td>
+                    <td class="py-3 px-4 text-right text-orange-400 font-medium">${balance}</td>
+                    <td class="py-3 px-4 text-gray-300"></td>
                 `;
                 
                 tableBody.appendChild(row);
@@ -263,9 +235,33 @@
         function initializeChart() {
             const ctx = document.getElementById('distribution-chart').getContext('2d');
             
-            // Prepare chart data
-            const labels = csvData.map(row => row['Balance Bracket']).filter(label => label);
-            const addresses = csvData.map(row => parseInt(row['Adressen'])).filter(count => !isNaN(count));
+            // Create balance brackets from JSON data
+            const brackets = {
+                '1M+': 0, '500K-1M': 0, '100K-500K': 0, '50K-100K': 0, '10K-50K': 0,
+                '5K-10K': 0, '1K-5K': 0, '500-1K': 0, '100-500': 0, '50-100': 0,
+                '10-50': 0, '1-10': 0, '0.1-1': 0, '< 0.1': 0
+            };
+            
+            csvData.forEach(entry => {
+                const balance = parseFloat(entry.balance_btc);
+                if (balance >= 1000000) brackets['1M+']++;
+                else if (balance >= 500000) brackets['500K-1M']++;
+                else if (balance >= 100000) brackets['100K-500K']++;
+                else if (balance >= 50000) brackets['50K-100K']++;
+                else if (balance >= 10000) brackets['10K-50K']++;
+                else if (balance >= 5000) brackets['5K-10K']++;
+                else if (balance >= 1000) brackets['1K-5K']++;
+                else if (balance >= 500) brackets['500-1K']++;
+                else if (balance >= 100) brackets['100-500']++;
+                else if (balance >= 50) brackets['50-100']++;
+                else if (balance >= 10) brackets['10-50']++;
+                else if (balance >= 1) brackets['1-10']++;
+                else if (balance >= 0.1) brackets['0.1-1']++;
+                else brackets['< 0.1']++;
+            });
+            
+            const labels = Object.keys(brackets);
+            const addresses = Object.values(brackets);
 
             chart = new Chart(ctx, {
                 type: 'bar',
@@ -299,7 +295,8 @@
                             },
                             ticks: {
                                 color: 'rgba(156, 163, 175, 0.8)',
-                                maxRotation: 45
+                                maxRotation: 90,
+                                minRotation: 45
                             }
                         }
                     },
@@ -325,59 +322,28 @@
         function analyzeHolding(btcAmount) {
             if (!csvData || btcAmount <= 0) return;
 
-            // Find the bracket the user's amount falls into
-            let userBracket = null;
-            let userBracketIndex = -1;
-
-            for (let i = 0; i < csvData.length; i++) {
-                const bracket = csvData[i]['Balance Bracket'];
-                if (!bracket) continue;
-
-                // Parse bracket range (e.g., "[1 - 10)" -> min: 1, max: 10)
-                const match = bracket.match(/\[([0-9.]+)\s*-\s*([0-9.]+)\)/);
-                if (match) {
-                    const min = parseFloat(match[1]);
-                    const max = parseFloat(match[2]);
-                    
-                    if (btcAmount >= min && btcAmount < max) {
-                        userBracket = bracket;
-                        userBracketIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            if (userBracketIndex === -1) {
-                // Handle edge cases (very small or very large amounts)
-                if (btcAmount < 0.001) {
-                    userBracketIndex = csvData.length - 1; // Poorest bracket
-                } else {
-                    userBracketIndex = 0; // Richest bracket
-                }
-            }
-
-            // Get cumulative percentage (top X%)
-            const cumulativePercent = parseFloat(csvData[userBracketIndex]['% Adressen (Summe)']);
-            const percentile = (100 - cumulativePercent).toFixed(2);
-
-            // Calculate number of addresses with more BTC using 60M total addresses assumption
+            // Count how many addresses have more BTC than the user
             let richerAddresses = 0;
-            for (let i = 0; i < userBracketIndex; i++) {
-                richerAddresses += parseInt(csvData[i]['Adressen']) || 0;
+            for (let i = 0; i < csvData.length; i++) {
+                const balance = parseFloat(csvData[i].balance_btc);
+                if (balance > btcAmount) {
+                    richerAddresses++;
+                }
             }
-            
-            // If we don't have exact data, estimate based on 60M total addresses
-            const totalAddresses = 60000000;
-            const estimatedRicherAddresses = Math.round((100 - cumulativePercent) / 100 * totalAddresses);
+
+            // Calculate percentile (top X%)
+            const totalAddresses = 60000000; // Total BTC addresses
+            const percentile = ((totalAddresses - richerAddresses) / totalAddresses * 100).toFixed(2);
+            const cumulativePercent = 100 - parseFloat(percentile);
 
             // Update UI
             document.getElementById('percentile-display').textContent = `Top ${percentile}%`;
             document.getElementById('summary-text').textContent = `You are in the top ${percentile}% of all addresses.`;
-            document.getElementById('count-text').textContent = `~${estimatedRicherAddresses.toLocaleString()} addresses own more BTC.`;
+            document.getElementById('count-text').textContent = `~${richerAddresses.toLocaleString()} addresses own more BTC.`;
 
             // Update gauge
             const gaugeFill = document.getElementById('gauge-fill');
-            const gaugeWidth = (100 - cumulativePercent);
+            const gaugeWidth = parseFloat(percentile);
             gaugeFill.style.width = `${gaugeWidth}%`;
 
             // Show results with animation
@@ -443,7 +409,7 @@
         }
 
         // Initialize the page
-        loadCSVData();
+        loadJSONData();
     </script>
 </body>
 </html>
