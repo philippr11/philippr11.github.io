@@ -159,6 +159,11 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto mt-12 text-center text-gray-400 text-sm">
+        <p>Data inspired by <a href="https://bitinfocharts.com/de/top-100-richest-bitcoin-addresses.html" target="_blank" class="text-orange-400 hover:text-orange-300 transition-colors duration-200">BitInfoCharts</a></p>
+    </footer>
+
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
         <div class="flex items-center gap-2">
@@ -239,7 +244,7 @@
             const brackets = {
                 '1M+': 0, '500K-1M': 0, '100K-500K': 0, '50K-100K': 0, '10K-50K': 0,
                 '5K-10K': 0, '1K-5K': 0, '500-1K': 0, '100-500': 0, '50-100': 0,
-                '10-50': 0, '1-10': 0, '0.1-1': 0, '< 0.1': 0
+                '10-50': 0, '1-10': 0
             };
             
             csvData.forEach(entry => {
@@ -256,8 +261,6 @@
                 else if (balance >= 50) brackets['50-100']++;
                 else if (balance >= 10) brackets['10-50']++;
                 else if (balance >= 1) brackets['1-10']++;
-                else if (balance >= 0.1) brackets['0.1-1']++;
-                else brackets['< 0.1']++;
             });
             
             const labels = Object.keys(brackets);
