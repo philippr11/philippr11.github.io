@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philipp R. - Solutions Engineer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        .animated-gradient {
+            background: linear-gradient(-45deg, #1e293b, #0f172a, #1e1b4b, #312e81);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+    </style>
+</head>
+<body class="animated-gradient min-h-screen flex items-center justify-center p-4">
+    <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 max-w-2xl w-full border border-gray-700/50">
+        <!-- Section 1: Bio & Intro -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">Philipp R.</h1>
+            <h2 class="text-xl text-gray-300 mb-4">Solutions Engineer</h2>
+            <p class="text-gray-400 mb-6 leading-relaxed">
+                I hold a B.Sc. in Computer Science with a passion for Finance, Bitcoin, and IT Security.
+            </p>
+            <a href="https://linkedin.com/in/philipp-rober" target="_blank" 
+               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200">
+                <i data-lucide="linkedin" class="w-5 h-5"></i>
+                LinkedIn Profile
+            </a>
+        </div>
+
+        <!-- Section 2: Finance Blog -->
+        <div class="text-center mb-8">
+            <h3 class="text-lg font-semibold text-white mb-4">My Finance Blog (German Only)</h3>
+            <div class="flex justify-center gap-6">
+                <a href="#" target="_blank" 
+                   class="text-gray-400 hover:text-white transition-colors duration-200"
+                   title="Website">
+                    <i data-lucide="globe" class="w-6 h-6"></i>
+                </a>
+                <a href="#" target="_blank" 
+                   class="text-gray-400 hover:text-white transition-colors duration-200"
+                   title="YouTube">
+                    <i data-lucide="youtube" class="w-6 h-6"></i>
+                </a>
+                <a href="#" target="_blank" 
+                   class="text-gray-400 hover:text-white transition-colors duration-200"
+                   title="Instagram">
+                    <i data-lucide="instagram" class="w-6 h-6"></i>
+                </a>
+                <a href="#" target="_blank" 
+                   class="text-gray-400 hover:text-white transition-colors duration-200"
+                   title="TikTok">
+                    <i data-lucide="music-4" class="w-6 h-6"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Section 3: Project Link -->
+        <div class="text-center">
+            <a href="./visualizer.html" 
+               class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white px-8 py-3 rounded-full font-medium transition-all duration-200 transform hover:scale-105">
+                <i data-lucide="bitcoin" class="w-5 h-5"></i>
+                Bitcoin Wealth Visualizer
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

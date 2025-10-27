@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Wealth Visualizer - Philipp R.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        .animated-gradient {
+            background: linear-gradient(-45deg, #1e293b, #0f172a, #1e1b4b, #312e81);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        .gauge-fill {
+            transition: width 1.5s ease-in-out;
+        }
+
+        .results-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-in-out;
+        }
+
+        .results-section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .loading-spinner {
+            border: 2px solid #374151;
+            border-top: 2px solid #f59e0b;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="animated-gradient min-h-screen p-4">
+    <!-- Header with Back Button -->
+    <div class="max-w-7xl mx-auto mb-6">
+        <a href="./index.html" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Column 1: User Input & Results -->
+            <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-gray-700/50">
+                <h2 class="text-2xl font-bold text-white mb-6">Analyze Your Holding</h2>
+                
+                <!-- Input Area -->
+                <div class="mb-6">
+                    <label for="btc-input" class="block text-gray-300 mb-2">Enter your BTC amount:</label>
+                    <div class="flex gap-3">
+                        <input type="number" id="btc-input" step="0.001" min="0" 
+                               class="flex-1 bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none"
+                               placeholder="e.g., 3.5">
+                        <button id="analyze-btn" 
+                                class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium">
+                            Analyze
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading-state" class="hidden text-center py-8">
+                    <div class="loading-spinner mx-auto mb-4"></div>
+                    <p class="text-gray-400">Loading Bitcoin data...</p>
+                </div>
+
+                <!-- Results Area (Hidden by default) -->
+                <div id="results-section" class="results-section">
+                    <!-- Percentile Text -->
+                    <div class="text-center mb-6">
+                        <div id="percentile-display" class="text-4xl font-bold text-orange-500 mb-2">Top 1.72%</div>
+                        <p id="summary-text" class="text-gray-300">You are in the top 1.72% of all addresses.</p>
+                    </div>
+
+                    <!-- Count Text -->
+                    <div class="text-center mb-6">
+                        <p id="count-text" class="text-gray-400">~828,247 addresses own more BTC.</p>
+                    </div>
+
+                    <!-- Graphical Gauge -->
+                    <div class="mb-6">
+                        <div class="bg-gray-700 rounded-full h-4 overflow-hidden">
+                            <div id="gauge-fill" class="gauge-fill bg-gradient-to-r from-orange-500 to-yellow-500 h-full rounded-full" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-400 mt-2">
+                            <span>0% (Poorest)</span>
+                            <span>100% (Richest)</span>
+                        </div>
+                    </div>
+
+                    <!-- Share Button -->
+                    <div class="text-center">
+                        <button id="share-btn" 
+                                class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200">
+                            <i data-lucide="share-2" class="w-5 h-5"></i>
+                            Share Your Rank
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2: Data Visualization -->
+            <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-gray-700/50">
+                <h2 class="text-2xl font-bold text-white mb-6">Bitcoin Address Distribution</h2>
+                <div class="relative">
+                    <canvas id="distribution-chart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 100 Holdings List -->
+        <div class="mt-12 bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-gray-700/50">
+            <h2 class="text-2xl font-bold text-white mb-6">Top 100 Bitcoin Holdings</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-600">
+                            <th class="text-left text-gray-300 py-3 px-4">Rank</th>
+                            <th class="text-left text-gray-300 py-3 px-4">Address</th>
+                            <th class="text-right text-gray-300 py-3 px-4">Balance (BTC)</th>
+                            <th class="text-left text-gray-300 py-3 px-4">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top-100-table">
+                        <!-- Top 100 entries will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex items-center gap-2">
+            <i data-lucide="check" class="w-5 h-5"></i>
+            <span>Copied to clipboard!</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Global variables
+        let csvData = null;
+        let chart = null;
+
+        // Load CSV data on page load
+        async function loadCSVData() {
+            const loadingState = document.getElementById('loading-state');
+            loadingState.classList.remove('hidden');
+
+            try {
+                const response = await fetch('https://github.com/philippr11/philippr11.github.io/releases/download/v1.0/bq-results-20251027-144739-1761577202520.csv');
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    complete: function(results) {
+                        csvData = results.data;
+                        loadingState.classList.add('hidden');
+                        initializeChart();
+                        populateTop100Table(); // Populate table with real data
+                        checkURLParameters();
+                    },
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
+                        loadingState.innerHTML = '<p class="text-red-400">Error loading data. Please try again later.</p>';
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching CSV:', error);
+                loadingState.innerHTML = '<p class="text-red-400">Error loading data. Please try again later.</p>';
+            }
+        }
+
+        // Populate top 100 holdings table with real CSV data
+        function populateTop100Table() {
+            const tableBody = document.getElementById('top-100-table');
+            
+            if (!csvData) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">Loading data...</td></tr>';
+                return;
+            }
+
+            // Get the top 100 entries from CSV data
+            // Assuming CSV has columns: Balance Bracket, Adressen, % Adressen (Summe)
+            const top100Data = [];
+            
+            // Sort by balance bracket to get richest first
+            const sortedData = csvData
+                .filter(row => row['Balance Bracket'] && row['Adressen'])
+                .sort((a, b) => {
+                    // Extract numeric values from balance brackets for sorting
+                    const getMinValue = (bracket) => {
+                        const match = bracket.match(/\[([0-9.]+)\s*-\s*([0-9.]+)\)/);
+                        return match ? parseFloat(match[1]) : 0;
+                    };
+                    return getMinValue(b['Balance Bracket']) - getMinValue(a['Balance Bracket']);
+                });
+
+            // Take top 100 entries and create table rows
+            sortedData.slice(0, 100).forEach((entry, index) => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700 hover:bg-gray-700/50 transition-colors duration-200';
+                
+                // Calculate approximate balance for display (use midpoint of bracket)
+                const bracket = entry['Balance Bracket'];
+                const match = bracket.match(/\[([0-9.]+)\s*-\s*([0-9.]+)\)/);
+                let displayBalance = bracket;
+                if (match) {
+                    const min = parseFloat(match[1]);
+                    const max = parseFloat(match[2]);
+                    const midpoint = (min + max) / 2;
+                    displayBalance = midpoint.toLocaleString('en-US', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    });
+                }
+                
+                row.innerHTML = `
+                    <td class="py-3 px-4 text-gray-300 font-medium">#${index + 1}</td>
+                    <td class="py-3 px-4 text-gray-400 font-mono text-xs">${bracket}</td>
+                    <td class="py-3 px-4 text-right text-orange-400 font-medium">~${displayBalance}</td>
+                    <td class="py-3 px-4 text-gray-300">${entry['Adressen']} addresses</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Initialize Chart.js visualization
+        function initializeChart() {
+            const ctx = document.getElementById('distribution-chart').getContext('2d');
+            
+            // Prepare chart data
+            const labels = csvData.map(row => row['Balance Bracket']).filter(label => label);
+            const addresses = csvData.map(row => parseInt(row['Adressen'])).filter(count => !isNaN(count));
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Addresses',
+                        data: addresses,
+                        backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'logarithmic',
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.3)'
+                            },
+                            ticks: {
+                                color: 'rgba(156, 163, 175, 0.8)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.3)'
+                            },
+                            ticks: {
+                                color: 'rgba(156, 163, 175, 0.8)',
+                                maxRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(156, 163, 175, 0.8)'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(31, 41, 55, 0.9)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: 'rgba(156, 163, 175, 0.3)',
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
+        }
+
+        // Analyze user's BTC holding
+        function analyzeHolding(btcAmount) {
+            if (!csvData || btcAmount <= 0) return;
+
+            // Find the bracket the user's amount falls into
+            let userBracket = null;
+            let userBracketIndex = -1;
+
+            for (let i = 0; i < csvData.length; i++) {
+                const bracket = csvData[i]['Balance Bracket'];
+                if (!bracket) continue;
+
+                // Parse bracket range (e.g., "[1 - 10)" -> min: 1, max: 10)
+                const match = bracket.match(/\[([0-9.]+)\s*-\s*([0-9.]+)\)/);
+                if (match) {
+                    const min = parseFloat(match[1]);
+                    const max = parseFloat(match[2]);
+                    
+                    if (btcAmount >= min && btcAmount < max) {
+                        userBracket = bracket;
+                        userBracketIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (userBracketIndex === -1) {
+                // Handle edge cases (very small or very large amounts)
+                if (btcAmount < 0.001) {
+                    userBracketIndex = csvData.length - 1; // Poorest bracket
+                } else {
+                    userBracketIndex = 0; // Richest bracket
+                }
+            }
+
+            // Get cumulative percentage (top X%)
+            const cumulativePercent = parseFloat(csvData[userBracketIndex]['% Adressen (Summe)']);
+            const percentile = (100 - cumulativePercent).toFixed(2);
+
+            // Calculate number of addresses with more BTC using 60M total addresses assumption
+            let richerAddresses = 0;
+            for (let i = 0; i < userBracketIndex; i++) {
+                richerAddresses += parseInt(csvData[i]['Adressen']) || 0;
+            }
+            
+            // If we don't have exact data, estimate based on 60M total addresses
+            const totalAddresses = 60000000;
+            const estimatedRicherAddresses = Math.round((100 - cumulativePercent) / 100 * totalAddresses);
+
+            // Update UI
+            document.getElementById('percentile-display').textContent = `Top ${percentile}%`;
+            document.getElementById('summary-text').textContent = `You are in the top ${percentile}% of all addresses.`;
+            document.getElementById('count-text').textContent = `~${estimatedRicherAddresses.toLocaleString()} addresses own more BTC.`;
+
+            // Update gauge
+            const gaugeFill = document.getElementById('gauge-fill');
+            const gaugeWidth = (100 - cumulativePercent);
+            gaugeFill.style.width = `${gaugeWidth}%`;
+
+            // Show results with animation
+            const resultsSection = document.getElementById('results-section');
+            resultsSection.classList.add('show');
+        }
+
+        // Check URL parameters on page load
+        function checkURLParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const btcParam = urlParams.get('btc');
+            
+            if (btcParam) {
+                const btcAmount = parseFloat(btcParam);
+                if (!isNaN(btcAmount)) {
+                    document.getElementById('btc-input').value = btcAmount;
+                    analyzeHolding(btcAmount);
+                }
+            }
+        }
+
+        // Event listeners
+        document.getElementById('analyze-btn').addEventListener('click', function() {
+            const btcAmount = parseFloat(document.getElementById('btc-input').value);
+            if (!isNaN(btcAmount) && btcAmount > 0) {
+                analyzeHolding(btcAmount);
+            } else {
+                alert('Please enter a valid BTC amount.');
+            }
+        });
+
+        document.getElementById('btc-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('analyze-btn').click();
+            }
+        });
+
+        document.getElementById('share-btn').addEventListener('click', async function() {
+            const btcAmount = document.getElementById('btc-input').value;
+            if (!btcAmount || parseFloat(btcAmount) <= 0) {
+                alert('Please analyze your holding first.');
+                return;
+            }
+
+            const shareUrl = `${window.location.origin}${window.location.pathname}?btc=${btcAmount}`;
+            
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+                showToast();
+            } catch (error) {
+                console.error('Failed to copy to clipboard:', error);
+                // Fallback: show URL in prompt
+                prompt('Copy this URL to share:', shareUrl);
+            }
+        });
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // Initialize the page
+        loadCSVData();
+    </script>
+</body>
+</html>
