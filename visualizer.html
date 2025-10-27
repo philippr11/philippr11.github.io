@@ -240,16 +240,14 @@
             
             // Create balance brackets from JSON data
             const brackets = {
-                '1M+': 0, '500K-1M': 0, '100K-500K': 0, '50K-100K': 0, '10K-50K': 0,
+                '100K-500K': 0, '50K-100K': 0, '10K-50K': 0,
                 '5K-10K': 0, '1K-5K': 0, '500-1K': 0, '100-500': 0, '50-100': 0,
                 '10-50': 0, '1-10': 0
             };
             
             csvData.forEach(entry => {
                 const balance = parseFloat(entry.balance_btc);
-                if (balance >= 1000000) brackets['1M+']++;
-                else if (balance >= 500000) brackets['500K-1M']++;
-                else if (balance >= 100000) brackets['100K-500K']++;
+                if (balance >= 100000) brackets['100K-500K']++;
                 else if (balance >= 50000) brackets['50K-100K']++;
                 else if (balance >= 10000) brackets['10K-50K']++;
                 else if (balance >= 5000) brackets['5K-10K']++;
@@ -283,11 +281,15 @@
                         y: {
                             type: 'logarithmic',
                             beginAtZero: false,
+                            min: 1,
+                            max: 1000000,
                             grid: {
                                 color: 'rgba(156, 163, 175, 0.3)'
                             },
                             ticks: {
-                                color: 'rgba(156, 163, 175, 0.8)'
+                                color: 'rgba(156, 163, 175, 0.8)',
+                                min: 1,
+                                max: 1000000
                             }
                         },
                         x: {
